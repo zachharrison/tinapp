@@ -19,7 +19,7 @@ const generateRandomString = () => {
       a[i] = a[i].toUpperCase();
     }
   });
-  return result.join('');s
+  return result.join('');
 };
 
 const urlDatabase = {
@@ -27,28 +27,24 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
+app.listen(PORT, () => console.log(`Example app listening on port ${PORT}!`));
 
-/*~~~~~~~~~~~~~~~~URL ROUTE HANDLERS~~~~~~~~~~~~~~~~*/
+/*~~~~~~~~~~~~~~~~~~~~URL ROUTE HANDLERS~~~~~~~~~~~~~~~~~~~~*/
 
-app.get('/urls.json', (req, res) => {
-  res.json(urlDatabase);
-});
+app.get('/urls.json', (req, res) => res.json(urlDatabase));
 
 app.get('/urls', (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render('urls_index', templateVars);
 });
 
-app.get('/urls/new', (req, res) => {
-  res.render('urls_new');
-});
+app.get('/urls/new', (req, res) => res.render('urls_new'));
 
 app.get('/urls/:shortURL', (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
-  res.render('urls_show', templateVars);
+  urlDatabase.hasOwnProperty(req.params.shortURL) ? res.render('urls_show', templateVars) : 
+  res.render('urls_error');
+
 });
 
 app.post('/urls', (req, res) => {
@@ -58,7 +54,7 @@ app.post('/urls', (req, res) => {
 });
 
 app.get('/u/:shortURL', (req, res) => {
-  // console.log(req.params.shortURL);
-  res.redirect(urlDatabase[req.params.shortURL]);
+  urlDatabase.hasOwnProperty(req.params.shortURL) ? res.redirect(urlDatabase[req.params.shortURL]) : 
+  res.render('urls_error');
 });
 

@@ -47,14 +47,19 @@ app.get('/urls/:shortURL', (req, res) => {
 
 });
 
+app.get('/u/:shortURL', (req, res) => {
+  urlDatabase.hasOwnProperty(req.params.shortURL) ? res.redirect(urlDatabase[req.params.shortURL]) : 
+  res.render('urls_error');
+});
+
 app.post('/urls', (req, res) => {
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
   res.redirect(`/urls/${shortURL}`);
 });
 
-app.get('/u/:shortURL', (req, res) => {
-  urlDatabase.hasOwnProperty(req.params.shortURL) ? res.redirect(urlDatabase[req.params.shortURL]) : 
-  res.render('urls_error');
+app.post('/urls/:shortURL/delete', (req, res) => {
+  delete urlDatabase[req.params.shortURL];
+  res.redirect('/urls');
 });
 

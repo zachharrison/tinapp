@@ -11,13 +11,13 @@
       </div>
       <% if(username) { %> 
         <form class="d-flex ml-auto" method="POST" action="/logout">
-          <p>Logged in as <%= username %> </p>
-          <button class="btn btn-outline-dark ml-2" type="submit">Logout</button>
+          <p class="mt-2">Logged in as <%= username %> </p>
+          <button class="btn btn-dark ml-2" type="submit">Logout</button>
         </form>
       <% } else {  %>    
       <form class="d-flex ml-auto" method="POST" action="/login">
         <input class="form-control" name="username" type="Login" placeholder="Login" aria-label="Login">
-        <button class="btn btn-outline-dark ml-2" type="submit">Login</button>
+        <button class="btn btn-dark ml-2" type="submit">Login</button>
       </form>
     <% } %> 
 

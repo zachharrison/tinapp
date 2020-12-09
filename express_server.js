@@ -8,9 +8,10 @@ const PORT = 8080;
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));
 
-
 // SET EJS AS THE VIEW ENGINE
 app.set('view engine', 'ejs');
+
+app.listen(PORT, () => console.log(`Example app listening on port ${PORT}!`));
 
 const generateRandomString = () => {
   let result = [];
@@ -29,12 +30,7 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
-app.listen(PORT, () => console.log(`Example app listening on port ${PORT}!`));
-
-/*~~~~~~~~~~~~~~~~~~~~URL ROUTE HANDLERS~~~~~~~~~~~~~~~~~~~~*/
-
-app.get('/urls.json', (req, res) => res.json(urlDatabase));
-
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~URL ROUTE HANDLERS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 app.get('/urls', (req, res) => {
   const templateVars = { urls: urlDatabase, username: req.cookies['username']};
   res.render('urls_index', templateVars);

@@ -4,9 +4,8 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const PORT = 8080;
 
-
+// USE MIDDLEWEAR
 app.use(cookieParser());
-
 app.use(bodyParser.urlencoded({extended: true}));
 
 
@@ -15,14 +14,13 @@ app.set('view engine', 'ejs');
 
 const generateRandomString = () => {
   let result = [];
+  let i = 0;
   while(result.length < 6) {
-    result.push(String.fromCharCode(Math.floor(Math.random() * 26) + 97));
+    i % 2 === 0 && i !== 1 ? result.push(String.fromCharCode(Math.floor(Math.random() * 26) + 97)) : 
+    i % 3 === 0 || i === 1 ? result.push(String.fromCharCode(Math.floor(Math.random() * 9) + 48)) :
+    result.push(String.fromCharCode(Math.floor(Math.random() * 26) + 65))
+    i++;
   }
-  result.forEach((x, i, a) => {
-    if (i % 2 === 0) {
-      a[i] = a[i].toUpperCase();
-    }
-  });
   return result.join('');
 };
 

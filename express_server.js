@@ -153,7 +153,7 @@ app.post('/register', (req, res) => {
     id, 
     email,
     password
-  }
+  };
 
   if (!email || !password) {
     return res.status(400).send('Please fill in all fields');
@@ -193,7 +193,7 @@ app.post('/logout', (req, res) => {
 
 app.post('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
-  urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[shortURL].longURL = req.body.longURL;
   res.redirect('/urls');
 });
 

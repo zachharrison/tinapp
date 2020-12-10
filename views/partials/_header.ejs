@@ -9,17 +9,16 @@
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
-      <% if(username) { %> 
-        <div class="ml-auto btn-group">
-          <p class="mr-3 mt-1">Logged in as <%= username %></p>
-          <a class="nav-item nav-link btn btn-inline-block btn-light" href="/urls/login">Logout</a>
-          <a class="nav-item nav-link btn btn-inline-block btn-dark ml-4" href="/urls/register">Register</a>
-        </div>
+      <% if(user_id) { %> 
+        <form class="ml-auto btn-group" method="POST" action="/logout">
+          <p class="mr-3 mt-1">Logged in as <%= user_id.email %> </p>
+          <button class="nav-item nav-link btn btn-inline-block btn-light" type="submit">Logout</button>
+        </form>
       <% } else {  %>    
-        <div class="ml-auto btn-group">
+        <form class="ml-auto btn-group">
           <a class="nav-item nav-link btn btn-light" href="/urls/login">Login</a>
           <a class="nav-item nav-link btn btn-dark ml-4" href="/urls/register">Register</a>
-        </div>
+        </form>
     <% } %> 
     </div>
   </nav>

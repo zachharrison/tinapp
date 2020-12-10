@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
+const bcrypt = require('bcrypt');
 const PORT = 8080;
 
 // USE MIDDLEWEAR
@@ -13,18 +14,7 @@ app.set('view engine', 'ejs');
 
 app.listen(PORT, () => console.log(`Example app listening on port ${PORT}!`));
 
-const users = {
-  "userRandomID": {
-    id: "userRandomID", 
-    email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
-  },
-  "user2": {
-    id: "user2", 
-    email: "user2@example.com", 
-    password: "purple"
-  }
-};
+const users = {};
 
 const urlDatabase = {
   "b2xVn2": { 
@@ -147,12 +137,13 @@ app.get('/u/:shortURL', (req, res) => {
 app.post('/register', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 2);
   const id = generateRandomString();
 
   const user = {
     id, 
     email,
-    password
+    password : hashedPassword
   };
 
   if (!email || !password) {
@@ -173,12 +164,13 @@ app.post('/register', (req, res) => {
 app.post('/login', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 2);
   const user = findWithEmail(email);
   const id = user.id;
 
   if (user.email !== email) {
     return res.status(403).send('Email or password is incorrect, try again.');
-  } else if (user.password !== password) {
+  } else if (!bcrypt.compareSync(password, hashedPassword)) {
     return res.status(403).send('Email or password is incorrect, try again.');
   }
 

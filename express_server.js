@@ -1,13 +1,14 @@
 const express = require("express");
 const app = express();
-// const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
+const { generateRandomString } = require("./helpers");
+const { findWithEmail } = require("./helpers");
+const { findUrlsForUser } = require("./helpers");
 const PORT = 8080;
 
-// USE MIDDLEWEAR
-// app.use(cookieParser());
+// MIDDLEWEAR
 app.use(cookieSession({ name: 'user_id', secret: 'secretKey' }));
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -30,46 +31,10 @@ const urlDatabase = {
 };
 
 /*********************************************************************
-                          HELPER FUNCTIONS
-***********************************************************************/
-
-const generateRandomString = () => {
-  let result = [];
-  let i = 0;
-  while(result.length < 6) {
-    i % 2 === 0 && i !== 1 ? result.push(String.fromCharCode(Math.floor(Math.random() * 26) + 97)) : 
-    i % 3 === 0 || i === 1 ? result.push(String.fromCharCode(Math.floor(Math.random() * 9) + 48)) :
-    result.push(String.fromCharCode(Math.floor(Math.random() * 26) + 65))
-    i++;
-  }
-  return result.join('');
-};
-
-const findWithEmail = (email) => {
-  for (const user in users) {
-    if (users[user].email === email) {
-      return users[user];
-    }
-  }
-  return false;
-};
-
-
-const findUrlsForUser = (id) => {
-  let result = {};
-  for (let url in urlDatabase) {
-    if (urlDatabase[url].userID === id) {
-      result[url] = urlDatabase[url];
-    }
-  }
-  return result;
-};
-
-/*********************************************************************
                           URL ROUTE HANDLERS
 ***********************************************************************/
 
-app.get('/urls/register', (req, res) => {
+app.get('/register', (req, res) => {
 
   const templateVars = { 
     user_id: users[req.session['user_id']],
@@ -78,13 +43,23 @@ app.get('/urls/register', (req, res) => {
   res.render('urls_register', templateVars);
 });
 
+app.get('/', (req, res) => {
+
+  if (!req.session['user_id']) {
+    return res.redirect('/login');
+  } else {
+    return res.redirect('/urls');
+  }
+  
+});
+
 app.get('/urls', (req, res) => {
   
   if (!req.session['user_id']) {
-    return res.redirect('/urls/login');
+    return res.redirect('/login');
   }
 
-  const userURLS = findUrlsForUser(req.session['user_id']);
+  const userURLS = findUrlsForUser(req.session['user_id'], urlDatabase);
   
   const templateVars = { 
     urls: userURLS, 
@@ -94,7 +69,7 @@ app.get('/urls', (req, res) => {
   res.render('urls_index', templateVars);
 });
 
-app.get('/urls/login', (req, res) => {
+app.get('/login', (req, res) => {
 
   const templateVars = { 
     user_id: users[req.session['user_id']], 
@@ -106,7 +81,7 @@ app.get('/urls/login', (req, res) => {
 app.get('/urls/new', (req, res) => {
   
   if (!req.session['user_id']) {
-    return res.redirect('/urls/login');
+    return res.redirect('/login');
   }
   
   const templateVars = { 
@@ -117,9 +92,19 @@ app.get('/urls/new', (req, res) => {
 });
 
 app.get('/urls/:shortURL', (req, res) => {
+  const shortURL = req.params.shortURL;
 
-  if (!req.session['user_id']) {
-    return res.redirect('/urls/login');
+  /* 
+    IF USER IS LOGGED IN, BUT URL DOES NOT BELONG TO USER, 
+    OR URL DOESN'T EXIST, OR USER IS NOT LOGGED IN, SEND AN ERROR
+  */
+  if (
+    req.session['user_id'] && 
+    urlDatabase[shortURL]['userID'] !== req.session['user_id'] ||
+    !urlDatabase[shortURL] ||
+    !req.session['user_id']
+  ) {
+    return res.status(404).send('Sorry, I could not find what you were looking for 🙁');
   }
 
   const templateVars = { 
@@ -128,9 +113,8 @@ app.get('/urls/:shortURL', (req, res) => {
     user_id: users[req.session['user_id']],
   };
 
-  urlDatabase.hasOwnProperty(req.params.shortURL) ? 
-  res.render('urls_show', templateVars) : 
-  res.render('urls_error', templateVars);
+  res.render('urls_show', templateVars);
+
 });
 
 app.get('/u/:shortURL', (req, res) => {
@@ -153,7 +137,7 @@ app.post('/register', (req, res) => {
     return res.status(400).send('Please fill in all fields');
   }
   
-  if (findWithEmail(email)) {
+  if (findWithEmail(email, users)) {
     return res.status(400).send('Email is already registered');
   }
   
@@ -167,13 +151,12 @@ app.post('/register', (req, res) => {
 app.post('/login', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const user = findWithEmail(email);
-  const id = user.id;
+  const user = findWithEmail(email, users);
 
-  if (user.email !== email || !bcrypt.compareSync(password, user.password)) {
+  if (!user || user.email !== email || !bcrypt.compareSync(password, user.password)) {
     return res.status(403).send('Email or password is incorrect, try again.');
   } else {
-    req.session.user_id = id;
+    req.session.user_id = user.id;
     res.redirect('/urls');
   }
 });
@@ -205,9 +188,7 @@ app.post('/urls', (req, res) => {
 app.post('/urls/:shortURL/delete', (req, res) => {
   const userID = req.session['user_id'];
   const shortURL = req.params['shortURL'];
-  // const urlObj = findUrlsForUser(userID);
-  // console.log(shortURL);
-  if (!findUrlsForUser(userID)[shortURL]) {
+  if (!findUrlsForUser(userID, urlDatabase)[shortURL]) {
     return res.redirect("/urls/login");
   }
 
@@ -215,4 +196,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
   res.redirect('/urls');
 });
 
+
+module.exports = urlDatabase;
+module.exports = users;
 

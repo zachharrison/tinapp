@@ -50,7 +50,7 @@ app.get('/', (req, res) => {
   } else {
     return res.redirect('/urls');
   }
-  
+
 });
 
 app.get('/urls', (req, res) => {
@@ -98,6 +98,7 @@ app.get('/urls/:shortURL', (req, res) => {
     IF USER IS LOGGED IN, BUT URL DOES NOT BELONG TO USER, 
     OR URL DOESN'T EXIST, OR USER IS NOT LOGGED IN, SEND AN ERROR
   */
+ 
   if (
     req.session['user_id'] && 
     urlDatabase[shortURL]['userID'] !== req.session['user_id'] ||
